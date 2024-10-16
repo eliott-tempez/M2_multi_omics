@@ -26,6 +26,11 @@ length(unique(data$sample_info$Y))
 #############################   Préprocessing   #############################
 #############################################################################
 
+# See if there are nas
+sum(is.na(data$RNA))
+sum(is.na(data$protein))
+sum(is.na(data$cyto))
+
 ##### CYTOKINES #####
 # Transform data
 cyto <- data$cyto %>%
@@ -38,19 +43,29 @@ cyto <- data$cyto %>%
                values_to = "Value") %>%           # The corresponding values will go into "Value"
   arrange(Condition)
 
-ggplot(cyto, aes(x = Cytokine, y = Value, col = Condition)) +
+# Cytokine expression distribution
+ggplot(cyto, aes(y = Value)) +
   geom_boxplot() +
-  theme_minimal() +
-  labs(title = "Cytokine Levels", 
+  labs(title = "Cytokine expression distribution (boxplot)",
+       y = "Expression level")
+
+ggplot(cyto, aes(x = Value)) +
+  geom_histogram() +
+  labs(title = "Cytokine expression distribution (histogram)",
+    x = "Expression level")
+
+# Expression of each molecule
+ggplot(cyto, aes(x = Cytokine, y = Value)) +
+  geom_boxplot() +
+  labs(title = "Individual Cytokine expression", 
        x = "Cytokine", 
        y = "Expression level") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-
+# Cytokine expression distribution, by condition
 ggplot(cyto, aes(x = Condition, y = Value, col = Condition)) +
   geom_boxplot() +
-  theme_minimal() +
-  labs(title = "Cytokine Levels by Condition", 
+  labs(title = "Cytokine expression distribution by condition", 
        x = "Time of prelevement", 
        y = "Expression level") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
@@ -59,8 +74,17 @@ ggplot(cyto, aes(x = Condition, y = Value, col = Condition)) +
 ggplot(cyto, aes(x = Value, fill = Condition)) +
   geom_histogram() +
   facet_wrap(vars(Condition)) +
-  labs(x = "Cytokine expression") +
+  labs(title = "Cytokine expression distribution by condition",
+    x = "Expression level") +
   theme(legend.position = "none")
+
+# Expression of each molecule, by condition
+ggplot(cyto, aes(x = Cytokine, y = Value, col = Condition)) +
+  geom_boxplot() +
+  labs(title = "Individual Cytokine Expression by time of sampling", 
+       x = "Cytokine", 
+       y = "Expression level") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
 ##### PROTEINS #####
@@ -75,11 +99,30 @@ prot <- data$protein %>%
                values_to = "Value") %>%           # The corresponding values will go into "Value"
   arrange(Condition)
 
+# Protein expression distribution
+ggplot(prot, aes(y = Value)) +
+  geom_boxplot() +
+  labs(title = "Protein expression distribution (boxplot)",
+       y = "Expression level")
 
+ggplot(prot, aes(x = Value)) +
+  geom_histogram() +
+  labs(title = "Protein expression distribution (histogram)",
+       x = "Expression level")
+
+# Expression of each molecule
+ggplot(prot, aes(x = Protein, y = Value)) +
+  geom_boxplot() +
+  labs(title = "Individual Protein expression", 
+       x = "Protein", 
+       y = "Expression level") +
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+# Protein expression distribution, by condition
 ggplot(prot, aes(x = Condition, y = Value, col = Condition)) +
   geom_boxplot() +
-  theme_minimal() +
-  labs(title = "Protein Levels by Condition", 
+  labs(title = "Protein expression distribution by condition", 
        x = "Time of prelevement", 
        y = "Expression level") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
@@ -88,7 +131,8 @@ ggplot(prot, aes(x = Condition, y = Value, col = Condition)) +
 ggplot(prot, aes(x = Value, fill = Condition)) +
   geom_histogram() +
   facet_wrap(vars(Condition)) +
-  labs(x = "Protein expression") +
+  labs(title = "Protein expression distribution by condition",
+       x = "Expression level") +
   theme(legend.position = "none")
 
 
@@ -104,11 +148,29 @@ rna <- data$RNA %>%
                values_to = "Value") %>%           # The corresponding values will go into "Value"
   arrange(Condition)
 
+# RNA expression distribution
+ggplot(rna, aes(y = Value)) +
+  geom_boxplot() +
+  labs(title = "RNA expression distribution (boxplot)",
+       y = "Expression level")
 
+ggplot(rna, aes(x = Value)) +
+  geom_histogram() +
+  labs(title = "RNA expression distribution (histogram)",
+       x = "Expression level") +
+  geom_vline(xintercept = 8000, col = "red", linetype = "dashed")
+
+ggplot(rna, aes(x = Value)) +
+  geom_histogram() +
+  labs(title = "RNA expression distribution (zoomed histogram)",
+       x = "Expression level") +
+  xlim(c(0, 8000)) +
+  ylim(c(0, 3000))
+
+# RNA expression distribution, by condition
 ggplot(rna, aes(x = Condition, y = Value, col = Condition)) +
   geom_boxplot() +
-  theme_minimal() +
-  labs(title = "RNA Levels by Condition", 
+  labs(title = "RNA expression distribution by condition", 
        x = "Time of prelevement", 
        y = "Expression level") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
@@ -117,19 +179,19 @@ ggplot(rna, aes(x = Condition, y = Value, col = Condition)) +
 ggplot(rna, aes(x = Value, fill = Condition)) +
   geom_histogram() +
   facet_wrap(vars(Condition)) +
-  labs(x = "RNA expression") +
+  labs(title = "RNA expression distribution by condition",
+       x = "Expression level") +
   theme(legend.position = "none") +
   geom_vline(xintercept = 8000, col = "red", linetype = "dashed")
 
 ggplot(rna, aes(x = Value, fill = Condition)) +
   geom_histogram() +
-  xlim(c(0, 8000)) +
-  ylim(c(0, 3000)) +
   facet_wrap(vars(Condition)) +
-  labs(x = "RNA expression", title = "Zoomed distribution") +
-  theme(legend.position = "none")
-
-
+  labs(title = "RNA expression distribution by condition (zoomed)",
+       x = "Expression level") +
+  theme(legend.position = "none") +
+  xlim(c(0, 8000)) +
+  ylim(c(0, 3000))
 
 
 
