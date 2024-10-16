@@ -37,7 +37,10 @@ sum(is.na(data$cyto))
 sum(data$cyto < 0)
 sum(data$protein < 0)
 sum(data$RNA < 0)
-paste("Number of negative cells:", length(which(data$RNA < 0, arr.ind = T)))
+# See if there are 0 values
+sum(data$cyto == 0)
+sum(data$protein == 0)
+sum(data$RNA == 0)
 
 ##### CYTOKINES #####
 # Transform data
@@ -237,18 +240,18 @@ ggplot(rna, aes(y = Value)) +
 ggsave(paste0(output_fold, 'initial_visualisation/rna_boxplot.png'))
 
 ggplot(rna, aes(x = Value)) +
-  geom_histogram() +
+  geom_histogram(bins = 200) +
   labs(title = "RNA expression distribution (histogram)",
        x = "Expression level") +
-  geom_vline(xintercept = 8000, col = "red", linetype = "dashed")
+  geom_vline(xintercept = 1000, col = "red", linetype = "dashed") +
+  geom_vline(xintercept = -1000, col = "red", linetype = "dashed")
 ggsave(paste0(output_fold, 'initial_visualisation/rna_hist.png'))
 
 ggplot(rna, aes(x = Value)) +
   geom_histogram() +
   labs(title = "RNA expression distribution (zoomed histogram)",
        x = "Expression level") +
-  xlim(c(0, 8000)) +
-  ylim(c(0, 3000))
+  xlim(c(-1000, 1000))
 ggsave(paste0(output_fold, 'initial_visualisation/rna_hist_zoom.png'))
 
 # RNA expression distribution, by condition
@@ -262,12 +265,13 @@ ggplot(rna, aes(x = Condition, y = Value, col = Condition)) +
 ggsave(paste0(output_fold, 'initial_visualisation/rna_boxplot_condition.png'))
 
 ggplot(rna, aes(x = Value, fill = Condition)) +
-  geom_histogram() +
+  geom_histogram(bins = 200) +
   facet_wrap(vars(Condition)) +
   labs(title = "RNA expression distribution by condition",
        x = "Expression level") +
   theme(legend.position = "none") +
-  geom_vline(xintercept = 8000, col = "red", linetype = "dashed")
+  geom_vline(xintercept = -1000, col = "red", linetype = "dashed") +
+  geom_vline(xintercept = 1000, col = "red", linetype = "dashed")
 ggsave(paste0(output_fold, 'initial_visualisation/rna_hist_condition.png'))
 
 ggplot(rna, aes(x = Value, fill = Condition)) +
@@ -276,8 +280,7 @@ ggplot(rna, aes(x = Value, fill = Condition)) +
   labs(title = "RNA expression distribution by condition (zoomed)",
        x = "Expression level") +
   theme(legend.position = "none") +
-  xlim(c(0, 8000)) +
-  ylim(c(0, 3000))
+  xlim(c(-1000, 1000))
 ggsave(paste0(output_fold, 'initial_visualisation/rna_hist_zoom_condition.png'))
 
 
@@ -286,40 +289,49 @@ cv_rna <- rna %>%
   group_by(RNA) %>%
   summarise(
     mean_value = mean(Value),
-    sd_value = sd(Value),
-    coef_var = abs(sd_value / mean_value)
-  )
+    sd_value = sd(Value))
 # Plot variation coef distribution
-ggplot(cv_rna, aes(x = coef_var)) +
-  geom_histogram() +
-  labs(title = "RNA coef of variation distribution",
-       x = "Expression coefficient of Variation (CV)")
+ggplot(cv_rna, aes(x = sd_value)) +
+  geom_histogram(binwidth = 10) +
+  labs(title = "RNA standard deviation distribution (zoomed)",
+       x = "Standard deviation") +
+  xlim(c(0, 3500)) +
+  ylim(c(0, 400))
 ggsave(paste0(output_fold, 'variation_coef/rna_cv.png'))
 
-ggplot(cv_rna, aes(x = coef_var)) +
-  geom_histogram() +
-  labs(title = "RNA coef of variation distribution",
-       x = "Expression coefficient of Variation (CV)") +
-  geom_vline(xintercept = 8, col = "red", linetype = "dashed")
+ggplot(cv_rna, aes(x = sd_value)) +
+  geom_histogram(binwidth = 10) +
+  labs(title = "RNA standard deviation distribution (zoomed)",
+       x = "Standard deviation") +
+  xlim(c(0, 3500)) +
+  ylim(c(0, 400)) +
+  geom_vline(xintercept = 80, col = "red", linetype = "dashed")
 ggsave(paste0(output_fold, 'variation_coef/rna_cv_lim.png'))
 
 
 # Update data to get rid of values under the threshold
-rna_to_del <- which(cv_rna$coef_var < 8)
+rna_to_del <- which(cv_rna$sd_value < 80)
 rna_to_del <- colnames(data$RNA)[rna_to_del]
 rna <- rna %>%
   filter(!RNA %in% rna_to_del)
 length(unique(rna$RNA))
-# On passe de 23855 à 2570 arn
+# On passe de 23855 à 1853 arn
 
 
 ##### Scale data #####
 cyto_scaled <- cyto %>%
-  mutate(Value = scale(Value))
+  group_by(Cytokine) %>%
+  mutate(Value = scale(Value, center = TRUE, scale = TRUE)) %>%
+  ungroup()
 prot_scaled <- prot %>%
-  mutate(Value = scale(Value))
+  group_by(Protein) %>%
+  mutate(Value = scale(Value, center = TRUE, scale = TRUE)) %>%
+  ungroup()
 rna_scaled <- rna %>%
-  mutate(Value = scale(Value))
+  group_by(RNA) %>%
+  mutate(Value = scale(Value, center = TRUE, scale = TRUE)) %>%
+  ungroup()
+
 
 # Expression distribution, by condition
 ggplot(cyto_scaled, aes(x = Condition, y = Value, col = Condition)) +
@@ -348,6 +360,7 @@ ggplot(rna_scaled, aes(x = Condition, y = Value, col = Condition)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "none")
 ggsave(paste0(output_fold, 'scaled_visualisation/rna_boxplot_condition.png'))
+
 
 
 
