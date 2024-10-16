@@ -123,6 +123,15 @@ ggplot(cv_cyto, aes(x = coef_var)) +
 ggsave(paste0(output_fold, 'variation_coef/cyto_cv_lim.png'))
 
 
+# Update data to get rid of values under the threshold
+cyto_to_del <- which(cv_cyto$coef_var < 0.4)
+cyto_to_del <- colnames(data$cyto)[cyto_to_del]
+cyto <- cyto %>%
+  filter(!Cytokine %in% cyto_to_del)
+length(unique(cyto$Cytokine))
+# On passe de 62 à 52 cytokines
+
+
 ##### PROTEINS #####
 # Transform data
 prot <- data$protein %>%
@@ -196,8 +205,17 @@ ggplot(cv_prot, aes(x = coef_var)) +
   geom_histogram() +
   labs(title = "Protein coef of variation distribution",
        x = "Expression coefficient of Variation (CV)") +
-  geom_vline(xintercept = 0.125, col = "red", linetype = "dashed")
+  geom_vline(xintercept = 0.2, col = "red", linetype = "dashed")
 ggsave(paste0(output_fold, 'variation_coef/prot_cv_lim.png'))
+
+
+# Update data to get rid of values under the threshold
+prot_to_del <- which(cv_prot$coef_var < 0.2)
+prot_to_del <- colnames(data$prot)[prot_to_del]
+prot <- prot %>%
+  filter(!Protein %in% prot_to_del)
+length(unique(prot$Protein))
+# On passe de 2329 à 1610 protéines
 
 
 ##### RNA #####
@@ -282,8 +300,17 @@ ggplot(cv_rna, aes(x = coef_var)) +
   geom_histogram() +
   labs(title = "RNA coef of variation distribution",
        x = "Expression coefficient of Variation (CV)") +
-  geom_vline(xintercept = 0.6, col = "red", linetype = "dashed")
+  geom_vline(xintercept = 8, col = "red", linetype = "dashed")
 ggsave(paste0(output_fold, 'variation_coef/rna_cv_lim.png'))
+
+
+# Update data to get rid of values under the threshold
+rna_to_del <- which(cv_rna$coef_var < 8)
+rna_to_del <- colnames(data$RNA)[rna_to_del]
+rna <- rna %>%
+  filter(!RNA %in% rna_to_del)
+length(unique(rna$RNA))
+# On passe de 23855 à 2570 arn
 
 
 
