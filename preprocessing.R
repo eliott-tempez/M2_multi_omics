@@ -3,14 +3,12 @@ library(ggplot2)
 library(tidyverse)
 
 # Set default image width
-my_ggsave <- function(filename, width = 4, height = 3.25, dpi = 1200) {
-  ggsave(filename = filename, width = width, height = height, dpi = dpi)
-}
 output_fold <- './output/plots/'
 
 #############################################################################
 ########################   Présentation du dataset   ########################
 #############################################################################
+
 data <- readRDS('./data/data_pregnancy.Rds')
 # Number of tables in data
 ls(data)
@@ -45,21 +43,20 @@ cyto <- data$cyto %>%
   # Reshape from wide to long format
   pivot_longer(cols = -c(Participant, Condition), # Pivot all columns except Participant and Condition
                names_to = "Cytokine",             # The names of the columns will go into "Cytokine"
-               values_to = "Value") %>%           # The corresponding values will go into "Value"
-  arrange(Condition)
+               values_to = "Value")
 
 # Cytokine expression distribution
 ggplot(cyto, aes(y = Value)) +
   geom_boxplot() +
   labs(title = "Cytokine expression distribution (boxplot)",
        y = "Expression level")
-my_ggsave(paste0(output_fold, 'initial_visualisation/cyto_boxplot.png'))
+ggsave(paste0(output_fold, 'initial_visualisation/cyto_boxplot.png'))
 
 ggplot(cyto, aes(x = Value)) +
   geom_histogram() +
   labs(title = "Cytokine expression distribution (histogram)",
     x = "Expression level")
-my_ggsave(paste0(output_fold, 'initial_visualisation/cyto_hist.png'))
+ggsave(paste0(output_fold, 'initial_visualisation/cyto_hist.png'))
 
 # Expression of each molecule
 ggplot(cyto, aes(x = Cytokine, y = Value)) +
@@ -68,7 +65,7 @@ ggplot(cyto, aes(x = Cytokine, y = Value)) +
        x = "Cytokine", 
        y = "Expression level") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-my_ggsave(paste0(output_fold, 'initial_visualisation/cyto_boxplot_indiv.png'))
+ggsave(paste0(output_fold, 'initial_visualisation/cyto_boxplot_indiv.png'))
 
 # Cytokine expression distribution, by condition
 ggplot(cyto, aes(x = Condition, y = Value, col = Condition)) +
@@ -78,7 +75,7 @@ ggplot(cyto, aes(x = Condition, y = Value, col = Condition)) +
        y = "Expression level") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "none")
-my_ggsave(paste0(output_fold, 'initial_visualisation/cyto_boxplot_condition.png'))
+ggsave(paste0(output_fold, 'initial_visualisation/cyto_boxplot_condition.png'))
 
 ggplot(cyto, aes(x = Value, fill = Condition)) +
   geom_histogram() +
@@ -86,7 +83,7 @@ ggplot(cyto, aes(x = Value, fill = Condition)) +
   labs(title = "Cytokine expression distribution by condition",
     x = "Expression level") +
   theme(legend.position = "none")
-my_ggsave(paste0(output_fold, 'initial_visualisation/cyto_hist_condition.png'))
+ggsave(paste0(output_fold, 'initial_visualisation/cyto_hist_condition.png'))
 
 # Expression of each molecule, by condition
 ggplot(cyto, aes(x = Cytokine, y = Value, col = Condition)) +
@@ -95,7 +92,23 @@ ggplot(cyto, aes(x = Cytokine, y = Value, col = Condition)) +
        x = "Cytokine", 
        y = "Expression level") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-my_ggsave(paste0(output_fold, 'initial_visualisation/cyto_boxplot_indiv_condition.png'))
+ggsave(paste0(output_fold, 'initial_visualisation/cyto_boxplot_indiv_condition.png'))
+
+
+# Calculate variation coef
+cv_cyto <- cyto %>%
+  group_by(Cytokine) %>%
+  summarise(
+    mean_value = mean(Value),
+    sd_value = sd(Value),
+    coef_var = sd_value / mean_value
+  )
+# Plot variation coef distribution
+ggplot(cv_cyto, aes(x = coef_var)) +
+  geom_histogram() +
+  labs(title = "Cytokine coef of variation distribution",
+    x = "Expression coefficient of Variation (CV)")
+ggsave(paste0(output_fold, 'variation_coef/cyto_cv.png'))
 
 
 ##### PROTEINS #####
@@ -106,22 +119,21 @@ prot <- data$protein %>%
          Condition = sub(".*_", "", rownames(data$cyto))) %>%
   # Reshape from wide to long format
   pivot_longer(cols = -c(Participant, Condition), # Pivot all columns except Participant and Condition
-               names_to = "Protein",             # The names of the columns will go into "Cytokine"
-               values_to = "Value") %>%           # The corresponding values will go into "Value"
-  arrange(Condition)
+               names_to = "Protein",
+               values_to = "Value")
 
 # Protein expression distribution
 ggplot(prot, aes(y = Value)) +
   geom_boxplot() +
   labs(title = "Protein expression distribution (boxplot)",
        y = "Expression level")
-my_ggsave(paste0(output_fold, 'initial_visualisation/prot_boxplot.png'))
+ggsave(paste0(output_fold, 'initial_visualisation/prot_boxplot.png'))
 
 ggplot(prot, aes(x = Value)) +
   geom_histogram() +
   labs(title = "Protein expression distribution (histogram)",
        x = "Expression level")
-my_ggsave(paste0(output_fold, 'initial_visualisation/prot_hist.png'))
+ggsave(paste0(output_fold, 'initial_visualisation/prot_hist.png'))
 
 # Expression of each molecule
 ggplot(prot, aes(x = Protein, y = Value)) +
@@ -131,7 +143,7 @@ ggplot(prot, aes(x = Protein, y = Value)) +
        y = "Expression level") +
   theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank())
-my_ggsave(paste0(output_fold, 'initial_visualisation/prot_boxplot_indiv.png'))
+ggsave(paste0(output_fold, 'initial_visualisation/prot_boxplot_indiv.png'))
 
 # Protein expression distribution, by condition
 ggplot(prot, aes(x = Condition, y = Value, col = Condition)) +
@@ -141,7 +153,7 @@ ggplot(prot, aes(x = Condition, y = Value, col = Condition)) +
        y = "Expression level") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "none")
-my_ggsave(paste0(output_fold, 'initial_visualisation/prot_boxplot_condition.png'))
+ggsave(paste0(output_fold, 'initial_visualisation/prot_boxplot_condition.png'))
 
 ggplot(prot, aes(x = Value, fill = Condition)) +
   geom_histogram() +
@@ -149,7 +161,23 @@ ggplot(prot, aes(x = Value, fill = Condition)) +
   labs(title = "Protein expression distribution by condition",
        x = "Expression level") +
   theme(legend.position = "none")
-my_ggsave(paste0(output_fold, 'initial_visualisation/prot_hist_condition.png'))
+ggsave(paste0(output_fold, 'initial_visualisation/prot_hist_condition.png'))
+
+
+# Calculate variation coef
+cv_prot <- prot %>%
+  group_by(Protein) %>%
+  summarise(
+    mean_value = mean(Value),
+    sd_value = sd(Value),
+    coef_var = sd_value / mean_value
+  )
+# Plot variation coef distribution
+ggplot(cv_prot, aes(x = coef_var)) +
+  geom_histogram() +
+  labs(title = "Protein coef of variation distribution",
+       x = "Expression coefficient of Variation (CV)")
+ggsave(paste0(output_fold, 'variation_coef/prot_cv.png'))
 
 
 ##### RNA #####
@@ -160,23 +188,22 @@ rna <- data$RNA %>%
          Condition = sub(".*_", "", rownames(data$cyto))) %>%
   # Reshape from wide to long format
   pivot_longer(cols = -c(Participant, Condition), # Pivot all columns except Participant and Condition
-               names_to = "RNA",             # The names of the columns will go into "Cytokine"
-               values_to = "Value") %>%           # The corresponding values will go into "Value"
-  arrange(Condition)
+               names_to = "RNA",
+               values_to = "Value")
 
 # RNA expression distribution
 ggplot(rna, aes(y = Value)) +
   geom_boxplot() +
   labs(title = "RNA expression distribution (boxplot)",
        y = "Expression level")
-my_ggsave(paste0(output_fold, 'initial_visualisation/rna_boxplot.png'))
+ggsave(paste0(output_fold, 'initial_visualisation/rna_boxplot.png'))
 
 ggplot(rna, aes(x = Value)) +
   geom_histogram() +
   labs(title = "RNA expression distribution (histogram)",
        x = "Expression level") +
   geom_vline(xintercept = 8000, col = "red", linetype = "dashed")
-my_ggsave(paste0(output_fold, 'initial_visualisation/rna_hist.png'))
+ggsave(paste0(output_fold, 'initial_visualisation/rna_hist.png'))
 
 ggplot(rna, aes(x = Value)) +
   geom_histogram() +
@@ -184,7 +211,7 @@ ggplot(rna, aes(x = Value)) +
        x = "Expression level") +
   xlim(c(0, 8000)) +
   ylim(c(0, 3000))
-my_ggsave(paste0(output_fold, 'initial_visualisation/rna_hist_zoom.png'))
+ggsave(paste0(output_fold, 'initial_visualisation/rna_hist_zoom.png'))
 
 # RNA expression distribution, by condition
 ggplot(rna, aes(x = Condition, y = Value, col = Condition)) +
@@ -194,7 +221,7 @@ ggplot(rna, aes(x = Condition, y = Value, col = Condition)) +
        y = "Expression level") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         legend.position = "none")
-my_ggsave(paste0(output_fold, 'initial_visualisation/rna_boxplot_condition.png'))
+ggsave(paste0(output_fold, 'initial_visualisation/rna_boxplot_condition.png'))
 
 ggplot(rna, aes(x = Value, fill = Condition)) +
   geom_histogram() +
@@ -203,7 +230,7 @@ ggplot(rna, aes(x = Value, fill = Condition)) +
        x = "Expression level") +
   theme(legend.position = "none") +
   geom_vline(xintercept = 8000, col = "red", linetype = "dashed")
-my_ggsave(paste0(output_fold, 'initial_visualisation/rna_hist_condition.png'))
+ggsave(paste0(output_fold, 'initial_visualisation/rna_hist_condition.png'))
 
 ggplot(rna, aes(x = Value, fill = Condition)) +
   geom_histogram() +
@@ -213,8 +240,23 @@ ggplot(rna, aes(x = Value, fill = Condition)) +
   theme(legend.position = "none") +
   xlim(c(0, 8000)) +
   ylim(c(0, 3000))
-my_ggsave(paste0(output_fold, 'initial_visualisation/rna_hist_zoom_condition.png'))
+ggsave(paste0(output_fold, 'initial_visualisation/rna_hist_zoom_condition.png'))
 
+
+# Calculate variation coef
+cv_rna <- rna %>%
+  group_by(RNA) %>%
+  summarise(
+    mean_value = mean(Value),
+    sd_value = sd(Value),
+    coef_var = sd_value / mean_value
+  )
+# Plot variation coef distribution
+ggplot(cv_rna, aes(x = coef_var)) +
+  geom_histogram() +
+  labs(title = "RNA coef of variation distribution",
+       x = "Expression coefficient of Variation (CV)")
+ggsave(paste0(output_fold, 'variation_coef/rna_cv.png'))
 
 
 
