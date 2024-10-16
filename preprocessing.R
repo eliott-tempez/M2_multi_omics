@@ -33,6 +33,11 @@ length(unique(data$sample_info$Y))
 sum(is.na(data$RNA))
 sum(is.na(data$protein))
 sum(is.na(data$cyto))
+# See if there are negative expression levels
+sum(data$cyto < 0)
+sum(data$protein < 0)
+sum(data$RNA < 0)
+paste("Number of negative cells:", length(which(data$RNA < 0, arr.ind = T)))
 
 ##### CYTOKINES #####
 # Transform data
@@ -110,6 +115,13 @@ ggplot(cv_cyto, aes(x = coef_var)) +
     x = "Expression coefficient of Variation (CV)")
 ggsave(paste0(output_fold, 'variation_coef/cyto_cv.png'))
 
+ggplot(cv_cyto, aes(x = coef_var)) +
+  geom_histogram() +
+  labs(title = "Cytokine coef of variation distribution",
+       x = "Expression coefficient of Variation (CV)") +
+  geom_vline(xintercept = 0.4, col = "red", linetype = "dashed")
+ggsave(paste0(output_fold, 'variation_coef/cyto_cv_lim.png'))
+
 
 ##### PROTEINS #####
 # Transform data
@@ -178,6 +190,14 @@ ggplot(cv_prot, aes(x = coef_var)) +
   labs(title = "Protein coef of variation distribution",
        x = "Expression coefficient of Variation (CV)")
 ggsave(paste0(output_fold, 'variation_coef/prot_cv.png'))
+
+# Plot variation coef distribution
+ggplot(cv_prot, aes(x = coef_var)) +
+  geom_histogram() +
+  labs(title = "Protein coef of variation distribution",
+       x = "Expression coefficient of Variation (CV)") +
+  geom_vline(xintercept = 0.125, col = "red", linetype = "dashed")
+ggsave(paste0(output_fold, 'variation_coef/prot_cv_lim.png'))
 
 
 ##### RNA #####
@@ -249,7 +269,7 @@ cv_rna <- rna %>%
   summarise(
     mean_value = mean(Value),
     sd_value = sd(Value),
-    coef_var = sd_value / mean_value
+    coef_var = abs(sd_value / mean_value)
   )
 # Plot variation coef distribution
 ggplot(cv_rna, aes(x = coef_var)) +
@@ -257,6 +277,13 @@ ggplot(cv_rna, aes(x = coef_var)) +
   labs(title = "RNA coef of variation distribution",
        x = "Expression coefficient of Variation (CV)")
 ggsave(paste0(output_fold, 'variation_coef/rna_cv.png'))
+
+ggplot(cv_rna, aes(x = coef_var)) +
+  geom_histogram() +
+  labs(title = "RNA coef of variation distribution",
+       x = "Expression coefficient of Variation (CV)") +
+  geom_vline(xintercept = 0.6, col = "red", linetype = "dashed")
+ggsave(paste0(output_fold, 'variation_coef/rna_cv_lim.png'))
 
 
 
