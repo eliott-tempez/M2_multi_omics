@@ -313,6 +313,41 @@ length(unique(rna$RNA))
 # On passe de 23855 à 2570 arn
 
 
+##### Scale data #####
+cyto_scaled <- cyto %>%
+  mutate(Value = scale(Value))
+prot_scaled <- prot %>%
+  mutate(Value = scale(Value))
+rna_scaled <- rna %>%
+  mutate(Value = scale(Value))
+
+# Expression distribution, by condition
+ggplot(cyto_scaled, aes(x = Condition, y = Value, col = Condition)) +
+  geom_boxplot() +
+  labs(title = "Scaled Cytokin expression distribution", 
+       x = "Time of prelevement", 
+       y = "Expression level") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+ggsave(paste0(output_fold, 'scaled_visualisation/cyto_boxplot_condition.png'))
+
+ggplot(prot_scaled, aes(x = Condition, y = Value, col = Condition)) +
+  geom_boxplot() +
+  labs(title = "Scaled protein expression distribution", 
+       x = "Time of prelevement", 
+       y = "Expression level") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+ggsave(paste0(output_fold, 'scaled_visualisation/prot_boxplot_condition.png'))
+
+ggplot(rna_scaled, aes(x = Condition, y = Value, col = Condition)) +
+  geom_boxplot() +
+  labs(title = "Scaled RNA expression distribution", 
+       x = "Time of prelevement", 
+       y = "Expression level") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+ggsave(paste0(output_fold, 'scaled_visualisation/rna_boxplot_condition.png'))
 
 
 
