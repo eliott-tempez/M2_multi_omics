@@ -48,9 +48,11 @@ explained_var_Y <- pls$prop_expl_var$Y
 explained_var <- rowMeans(cbind(explained_var_X, explained_var_Y))
 
 # Tracer la proportion de covariance capturée
+png(paste0(output_fold, 'pls/elbow_plot.png'))
 plot(explained_var, type = "b", pch = 19, col = "#3d1619", 
      xlab = "Nombre de composantes", ylab = "Proportion de Covariance Capturée",
      main = "Proportion de Covariance Capturée - PLS")
+dev.off()
 ggsave(paste0(output_fold, 'pls/elbow_plot.png'))
 # On choisit 5 composantes
 pls <- pls(X = rna_matrix, Y = prot_matrix, ncomp = 5)
