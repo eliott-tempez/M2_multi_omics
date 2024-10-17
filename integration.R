@@ -175,7 +175,7 @@ final.diablo.model = block.splsda(X = data, Y = Y, ncomp = ncomp,
 
 # Plot model
 png(paste0(output_fold, 'diablo/plot_3.png'),
-           width = 800, height = 800, units = "px")
+           width = 3000, height = 3000, units = "px", pointsize = 72)
 plotDiablo(final.diablo.model, ncomp = 1, col.per.group = colors)
 dev.off()
 
@@ -183,14 +183,14 @@ dev.off()
 
 ##### Circo and network plot #####
 png(paste0(output_fold, 'diablo/circo_plot.png'),
-    width = 1000, height = 1000, units = "px")
+    width = 3000, height = 3000, units = "px", pointsize = 72)
 circosPlot(final.diablo.model, cutoff = 0.7, line = TRUE,
            color.blocks= colors[1:3],
            color.cor = c("chocolate3","grey20"), size.labels = 1.5)
 dev.off()
 
 png(paste0(output_fold, 'diablo/network_plot.png'),
-    width = 1000, height = 1000, units = "px")
+    width = 3000, height = 3000, units = "px", pointsize = 50)
 network(final.diablo.model, 
         blocks = c(1,2,3),
         color.node = colors[2:4], 
