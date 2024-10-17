@@ -4,7 +4,8 @@ library(tidyverse)
 library(mixOmics)
 library(netOmics)
 library(igraph)
-library(timeOmics)
+library(gprofiler2)
+library(paletteer)
 
 # Set default image width
 output_fold <- './output/plots/'
@@ -175,7 +176,6 @@ clusters_inter <- cluster_optimal(merged_graph)
 plot(clusters_inter, merged_graph)
 
 
-
 ##### Random walk #####
 random_walk <- random_walk(merged_graph, start = "P17676", steps = 500)
 visited_nodes <- unique(random_walk)$name
@@ -186,6 +186,59 @@ png(paste0(output_fold, 'grn/random_walk.png'),
 plot(merged_graph, vertex.label = NA, vertex.size = 5,
      edge.width = 2, main = "Random Walk from Node P17676\n(500 steps)")
 dev.off()
+
+
+##### Enrichment #####
+# Select main network
+components <- clusters(merged_graph)
+membership <- components$membership
+# Find out how many nodes are in each component
+component_sizes <- components$csize
+# Check the number of components and their sizes
+print(component_sizes)
+# Extract the biggest
+largest_component_id <- which.max(component_sizes)
+largest_subgraph <- induced_subgraph(merged_graph, which(membership == largest_component_id))
+
+# Node names
+net_list <- V(largest_subgraph)$name
+gostres <- gost(query = net_list, organism = "hsapiens")
+
+# Analysis
+png(paste0(output_fold, 'grn/enrichment.png'),
+    width = 3000, height = 3000, units = "px", pointsize = 1000)
+gostplot(gostres, capped = FALSE, interactive = FALSE,
+  pal = paletteer_c("ggthemes::Orange-Gold", 11))
+dev.off()
+
+go_cc_results <- gostres$result[gostres$result$source == "GO:CC", ] %>%
+  arrange(intersection_size)
+go_bp_results <- gostres$result[gostres$result$source == "GO:BP", ] %>%
+  arrange(intersection_size)
+go_bp_results$short_term_name <- substr(go_bp_results$term_name, 1, 50)
+
+ggplot(go_cc_results[1:30,], aes(x = reorder(term_name, -intersection_size), y = intersection_size)) +
+  geom_bar(stat = "identity", fill = "#f2f1be") +  # Change color as needed
+  coord_flip() +  # Flip coordinates for better readability
+  xlab("GO Term (Cellular Component)") +
+  ylab("Intersection Size (Number of Genes)") +
+  ggtitle("Top 30 Gene Overlaps\nwith GO:CC Terms") +
+  theme_minimal(base_size = 12) +
+  ylim(c(0, 20))
+
+ggplot(go_bp_results[1:30,], aes(x = reorder(short_term_name, -intersection_size), y = intersection_size)) +
+  geom_bar(stat = "identity", fill = "#d58937") +  # Change color as needed
+  coord_flip() +  # Flip coordinates for better readability
+  xlab("GO Term (Biological Process)") +
+  ylab("Intersection Size (Number of Genes)") +
+  ggtitle("Top 30 Gene Overlaps\nwith GO:BP Terms") +
+  theme_minimal(base_size = 12) +
+  ylim(c(0, 20))
+
+
+
+
+
 
 
 
