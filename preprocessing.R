@@ -402,8 +402,9 @@ condition_group <- cyto_wide$Condition
 
 # Elbow plot
 pca_cyto <- pca(cyto_matrix, ncomp = 10)
+png(paste0(output_fold, 'pca/elbow_plot_cyto.png'))
 plot(pca_cyto)
-ggsave(paste0(output_fold, 'pca/elbow_plot_cyto.png'))
+dev.off()
 # On choisit 3 composantes
 pca_cyto <- pca(cyto_matrix, ncomp = 3)
 
@@ -423,8 +424,9 @@ prot_matrix <- as.matrix(dplyr::select(prot_wide, -Participant, -Condition))
 
 # Elbow plot
 pca_prot <- pca(prot_matrix, ncomp = 10)
-plot(pca_prot)
-ggsave(paste0(output_fold, 'pca/elbow_plot_prot.png'))
+png(paste0(output_fold, 'pca/elbow_plot_prot.png'))
+plot(pca_prot)  # This uses base R plot
+dev.off()
 # On choisit 3 composantes
 pca_prot <- pca(prot_matrix, ncomp = 3)
 
@@ -432,7 +434,7 @@ pca_prot <- pca(prot_matrix, ncomp = 3)
 plotIndiv(pca_prot, group = condition_group)
 ggsave(paste0(output_fold, 'pca/pca_prot_indiv.png'))
 plotVar(pca_prot)
-ggsave(paste0(output_fold, 'pca/pca_prot_indiv.png'))
+ggsave(paste0(output_fold, 'pca/pca_prot_var.png'))
 
 
 ##### RNA #####
@@ -444,16 +446,17 @@ rna_matrix <- as.matrix(dplyr::select(rna_wide, -Participant, -Condition))
 
 # Elbow plot
 pca_rna <- pca(rna_matrix, ncomp = 10)
+png(paste0(output_fold, 'pca/elbow_plot_rna.png'))
 plot(pca_rna)
-ggsave(paste0(output_fold, 'pca/elbow_plot_rna.png'))
+dev.off()
 # On choisit 2 composantes
 pca_rna <- pca(rna_matrix, ncomp = 2)
 
 # PCA plot
 plotIndiv(pca_rna, group = condition_group)
-ggsave(paste0(output_fold, 'pca/pca_prot_indiv.png'))
+ggsave(paste0(output_fold, 'pca/pca_rna_indiv.png'))
 plotVar(pca_rna)
-ggsave(paste0(output_fold, 'pca/pca_prot_indiv.png'))
+ggsave(paste0(output_fold, 'pca/pca_rna_indiv.png'))
 
 # Contributing variables
 # Get the loadings for the first two principal components
