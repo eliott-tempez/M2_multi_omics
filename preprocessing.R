@@ -112,7 +112,7 @@ cv_cyto <- cyto %>%
   summarise(
     mean_value = mean(Value),
     sd_value = sd(Value),
-    coef_var = sd_value / mean_value
+    coef_var = abs(sd_value / mean_value)
   )
 # Plot variation coef distribution
 ggplot(cv_cyto, aes(x = coef_var)) +
@@ -198,7 +198,7 @@ cv_prot <- prot %>%
   summarise(
     mean_value = mean(Value),
     sd_value = sd(Value),
-    coef_var = sd_value / mean_value
+    coef_var = abs(sd_value / mean_value)
   )
 # Plot variation coef distribution
 ggplot(cv_prot, aes(x = coef_var)) +
