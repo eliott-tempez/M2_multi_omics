@@ -405,7 +405,7 @@ pca_cyto <- pca(cyto_matrix, ncomp = 10)
 png(paste0(output_fold, 'pca/elbow_plot_cyto.png'))
 plot(pca_cyto)
 dev.off()
-# On choisit 3 composantes
+# On choisit 4 composantes
 pca_cyto <- pca(cyto_matrix, ncomp = 3)
 
 # Plot PCA
@@ -427,7 +427,7 @@ pca_prot <- pca(prot_matrix, ncomp = 10)
 png(paste0(output_fold, 'pca/elbow_plot_prot.png'))
 plot(pca_prot)  # This uses base R plot
 dev.off()
-# On choisit 3 composantes
+# On choisit 4 composantes
 pca_prot <- pca(prot_matrix, ncomp = 3)
 
 # PCA plot
@@ -449,7 +449,7 @@ pca_rna <- pca(rna_matrix, ncomp = 10)
 png(paste0(output_fold, 'pca/elbow_plot_rna.png'))
 plot(pca_rna)
 dev.off()
-# On choisit 2 composantes
+# On choisit 4 composantes
 pca_rna <- pca(rna_matrix, ncomp = 2)
 
 # PCA plot
