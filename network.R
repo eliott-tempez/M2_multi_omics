@@ -170,9 +170,22 @@ dev.off()
 
 
 # Analyse de modularité
+save(merged_graph, file = "./data/merged_graph.RData")
+clusters_inter <- cluster_optimal(merged_graph)
+plot(clusters_inter, merged_graph)
 
 
 
+##### Random walk #####
+random_walk <- random_walk(merged_graph, start = "P17676", steps = 500)
+visited_nodes <- unique(random_walk)$name
+length(visited_nodes)
+V(merged_graph)$color <- ifelse(V(merged_graph)$name %in% visited_nodes, "#69150f",  "darkgrey")
+png(paste0(output_fold, 'grn/random_walk.png'),
+    width = 3000, height = 3000, units = "px", pointsize = 72)
+plot(merged_graph, vertex.label = NA, vertex.size = 5,
+     edge.width = 2, main = "Random Walk from Node P17676\n(500 steps)")
+dev.off()
 
 
 
