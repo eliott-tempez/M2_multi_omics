@@ -1,6 +1,8 @@
 library(tidyr)
 library(ggplot2)
 library(tidyverse)
+library(biobase)
+library(sva)
 
 # Set default image width
 output_fold <- './output/plots/'
@@ -41,6 +43,8 @@ sum(data$RNA < 0)
 sum(data$cyto == 0)
 sum(data$protein == 0)
 sum(data$RNA == 0)
+
+
 
 ##### CYTOKINES #####
 # Transform data
@@ -135,6 +139,7 @@ length(unique(cyto$Cytokine))
 # On passe de 62 à 52 cytokines
 
 
+
 ##### PROTEINS #####
 # Transform data
 prot <- data$protein %>%
@@ -219,6 +224,7 @@ prot <- prot %>%
   filter(!Protein %in% prot_to_del)
 length(unique(prot$Protein))
 # On passe de 2329 à 1610 protéines
+
 
 
 ##### RNA #####
@@ -318,6 +324,7 @@ length(unique(rna$RNA))
 # On passe de 23855 à 1853 arn
 
 
+
 ##### Scale data #####
 cyto_scaled <- cyto %>%
   group_by(Cytokine) %>%
@@ -362,5 +369,7 @@ ggplot(rna_scaled, aes(x = Condition, y = Value, col = Condition)) +
 ggsave(paste0(output_fold, 'scaled_visualisation/rna_boxplot_condition.png'))
 
 
-
+##### Save processed data #####
+processed_data <- list("rna" = rna_scaled, "prot" = prot_scaled, "cyto" = cyto_scaled)
+save(processed_data, file = './data/processed_data.RData')
 
