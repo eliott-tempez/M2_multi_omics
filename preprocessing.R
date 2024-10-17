@@ -1,8 +1,7 @@
 library(tidyr)
 library(ggplot2)
 library(tidyverse)
-library(biobase)
-library(sva)
+library(mixOmics)
 
 # Set default image width
 output_fold <- './output/plots/'
@@ -372,4 +371,104 @@ ggsave(paste0(output_fold, 'scaled_visualisation/rna_boxplot_condition.png'))
 ##### Save processed data #####
 processed_data <- list("rna" = rna_scaled, "prot" = prot_scaled, "cyto" = cyto_scaled)
 save(processed_data, file = './data/processed_data.RData')
+
+
+
+# Most varying molecules
+cv_cyto %>%
+  arrange(desc(coef_var)) %>%
+  head(3)
+
+cv_prot %>%
+  arrange(desc(coef_var)) %>%
+  head(3)
+
+cv_rna %>%
+  arrange(desc(sd_value)) %>%
+  head(3)
+
+
+
+#############################################################################
+##################################   ACP   ##################################
+#############################################################################
+##### Cytokines #####
+cyto_wide <- cyto_scaled %>%
+  dplyr::select(Participant, Condition, Cytokine, Value) %>%
+  tidyr::pivot_wider(names_from = Cytokine, values_from = Value)
+# Get rid of non numeric variables
+cyto_matrix <- as.matrix(dplyr::select(cyto_wide, -Participant, -Condition))
+condition_group <- cyto_wide$Condition
+
+# Elbow plot
+pca_cyto <- pca(cyto_matrix, ncomp = 10)
+plot(pca_cyto)
+ggsave(paste0(output_fold, 'pca/elbow_plot_cyto.png'))
+# On choisit 3 composantes
+pca_cyto <- pca(cyto_matrix, ncomp = 3)
+
+# Plot PCA
+plotIndiv(pca_cyto, comp=c(1, 2), group = condition_group)
+ggsave(paste0(output_fold, 'pca/pca_cyto_indiv.png'))
+plotVar(pca_cyto)
+ggsave(paste0(output_fold, 'pca/pca_cyto_var.png'))
+
+
+##### Proteins #####
+prot_wide <- prot_scaled %>%
+  dplyr::select(Participant, Condition, Protein, Value) %>%
+  tidyr::pivot_wider(names_from = Protein, values_from = Value)
+# Get rid of non numeric variables
+prot_matrix <- as.matrix(dplyr::select(prot_wide, -Participant, -Condition))
+
+# Elbow plot
+pca_prot <- pca(prot_matrix, ncomp = 10)
+plot(pca_prot)
+ggsave(paste0(output_fold, 'pca/elbow_plot_prot.png'))
+# On choisit 3 composantes
+pca_prot <- pca(prot_matrix, ncomp = 3)
+
+# PCA plot
+plotIndiv(pca_prot, group = condition_group)
+ggsave(paste0(output_fold, 'pca/pca_prot_indiv.png'))
+plotVar(pca_prot)
+ggsave(paste0(output_fold, 'pca/pca_prot_indiv.png'))
+
+
+##### RNA #####
+rna_wide <- rna_scaled %>%
+  dplyr::select(Participant, Condition, RNA, Value) %>%
+  tidyr::pivot_wider(names_from = RNA, values_from = Value)
+# Get rid of non numeric variables
+rna_matrix <- as.matrix(dplyr::select(rna_wide, -Participant, -Condition))
+
+# Elbow plot
+pca_rna <- pca(rna_matrix, ncomp = 10)
+plot(pca_rna)
+ggsave(paste0(output_fold, 'pca/elbow_plot_rna.png'))
+# On choisit 2 composantes
+pca_rna <- pca(rna_matrix, ncomp = 2)
+
+# PCA plot
+plotIndiv(pca_rna, group = condition_group)
+ggsave(paste0(output_fold, 'pca/pca_prot_indiv.png'))
+plotVar(pca_rna)
+ggsave(paste0(output_fold, 'pca/pca_prot_indiv.png'))
+
+# Contributing variables
+# Get the loadings for the first two principal components
+loadings_pca <- pca_rna$loadings$X
+head(loadings_pca[, 1])
+head(loadings_pca[, 2])
+
+
+
+
+
+
+
+
+
+
+
 
