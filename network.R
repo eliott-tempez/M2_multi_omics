@@ -85,14 +85,14 @@ ppi_prot <- graph_from_data_frame(filtered_ppi, directed = FALSE)
 png(paste0(output_fold, 'grn/ppi.png'),
     width = 3000, height = 3000, units = "px", pointsize = 72)
 plot(ppi_prot, vertex.label = NA, vertex.size = 5,
-     edge.width = 2 , main = "PPI network", vertex.color = "#a44200")
+     edge.width = 2 , main = "PPI network", vertex.color = "#f2f1be")
 dev.off()
 
 ppi_deg <- degree(ppi_prot)
 png(paste0(output_fold, 'grn/ppi_degrees.png'),
     width = 3000, height = 3000, units = "px", pointsize = 72)
 hist(ppi_deg,
-     col = "#a44200", xlab = "Degree",
+     col = "#f2f1be", xlab = "Degree",
      ylab = "Frequency", main = "Degree Distribution of PPI")
 dev.off()
 
@@ -103,11 +103,73 @@ dev.off()
 #############################################################################
 gene_to_prot <- readRDS("./data/supp/human_gene_to_coding_protein.Rds")
 TF_to_gene <- readRDS("./data/supp/human_TF_to_targeted_gene.Rds")
+gene_list <- V(grn_clean)$name
 
 
+#### gene -> prot ####
+gene_to_prot_c <- data.frame("from" = gene_to_prot$ENSEMBL, "to" = gene_to_prot$UNIPROT) %>%
+  filter(from %in% gene_list & to %in% protein_list)
+
+# Plot merged graph
+merged_graph <- combine_layers(graph1 = grn_clean, graph2 = ppi_prot, interaction.df = gene_to_prot_c)
+plot(merged_graph, vertex.label = NA, vertex.size = 5,
+     edge.width = 2 , main = "Gene to prot connections")
+# Colors
+V(merged_graph)$color <- ifelse(V(merged_graph)$name %in% V(grn_clean)$name, "#a44200", "#f2f1be")
+png(paste0(output_fold, 'grn/gene_to_prot.png'),
+    width = 3000, height = 3000, units = "px", pointsize = 72)
+plot(merged_graph, vertex.label = NA, vertex.size = 5,
+     edge.width = 2 , main = "Gene to prot connections")
+dev.off()
+
+# Number of prot/gene connections
+as.data.frame(as_data_frame(merged_graph, what = "edges")) %>%
+  filter((from %in% gene_list & to %in% protein_list) |
+           (to %in% gene_list & from %in% protein_list))
 
 
+#### TF -> gene ####
+TF_to_gene_c <- data.frame("from" = TF_to_gene$UNIPROT, "to" = TF_to_gene$ENSEMBL) %>%
+  filter(from %in% protein_list & to %in% gene_list)
 
+# Plot merged graph
+merged_graph <- combine_layers(graph1 = grn_clean, graph2 = ppi_prot, interaction.df = TF_to_gene_c)
+plot(merged_graph, vertex.label = NA, vertex.size = 5,
+     edge.width = 2 , main = "TF to gene connections")
+# Colors
+V(merged_graph)$color <- ifelse(V(merged_graph)$name %in% V(grn_clean)$name, "#a44200", "#f2f1be")
+png(paste0(output_fold, 'grn/TF_to_gene.png'),
+    width = 3000, height = 3000, units = "px", pointsize = 72)
+plot(merged_graph, vertex.label = NA, vertex.size = 5,
+     edge.width = 2 , main = "TF to gene connections")
+dev.off()
+
+# Number of prot/gene connections
+as.data.frame(as_data_frame(merged_graph, what = "edges")) %>%
+  filter((from %in% gene_list & to %in% protein_list) |
+           (to %in% gene_list & from %in% protein_list))
+
+
+##### Global interactions #####
+gene_prot_connect <- rbind(
+  data.frame("from" = gene_to_prot$UNIPROT, "to" = gene_to_prot$ENSEMBL),
+  data.frame("from" = TF_to_gene$UNIPROT, "to" = TF_to_gene$ENSEMBL)) %>%
+  filter(from %in% protein_list & to %in% gene_list)
+
+# Plot merged graph
+merged_graph <- combine_layers(graph1 = grn_clean, graph2 = ppi_prot, interaction.df = gene_prot_connect)
+plot(merged_graph, vertex.label = NA, vertex.size = 5,
+     edge.width = 2 , main = "Connected gene and protein networks")
+# Colors
+V(merged_graph)$color <- ifelse(V(merged_graph)$name %in% V(grn_clean)$name, "#a44200", "#f2f1be")
+png(paste0(output_fold, 'grn/grn_ppi.png'),
+    width = 3000, height = 3000, units = "px", pointsize = 72)
+plot(merged_graph, vertex.label = NA, vertex.size = 5,
+     edge.width = 2 , main = "Connected gene and protein networks")
+dev.off()
+
+
+# Analyse de modularité
 
 
 
